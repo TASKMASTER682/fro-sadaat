@@ -1,0 +1,15 @@
+/* Add after existing globals.css content */
+
+/* Hide sidebar on mobile */
+@media (max-width: 1023px) {
+  aside.fixed.left-0 {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  aside.fixed.left-0.open {
+    transform: translateX(0);
+  }
+  main.flex-1.ml-0 {
+    margin-left: 0 !important;
+  }
+}

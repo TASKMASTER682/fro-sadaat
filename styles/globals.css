@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
+@import './responsive.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 45 60% 85%;
+    --card: 0 0% 7%;
+    --card-foreground: 45 60% 85%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 45 60% 85%;
+    --primary: 45 65% 52%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 45 60% 85%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 45 65% 52%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 14%;
+    --ring: 45 65% 52%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-clan-black text-foreground font-inter;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
+  }
+  h1, h2, h3 { @apply font-cinzel; }
+}
+
+@layer components {
+  /* Glassmorphism panel */
+  .glass-panel {
+    @apply bg-clan-dark-2 border border-clan-border backdrop-blur-xl;
+    background: linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(17,17,17,0.98) 100%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(212, 175, 55, 0.08);
+  }
+
+  /* Gold button */
+  .btn-gold {
+    @apply bg-gold-gradient text-clan-black font-cinzel font-semibold px-6 py-2.5 rounded-lg
+           transition-all duration-200 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply border border-clan-border text-clan-gold font-inter px-5 py-2 rounded-lg
+           hover:border-clan-gold hover:bg-clan-gold/5 transition-all duration-200;
+  }
+
+  /* Gold text */
+  .text-gold { @apply text-clan-gold; }
+
+  /* Node status colors */
+  .node-leader { fill: #D4AF37; }
+  .node-active { fill: #22C55E; }
+  .node-deceased { fill: #4B5563; }
+  .node-inactive { fill: #EF4444; }
+  .node-pending { fill: #F59E0B; }
+
+  /* Scrollbar */
+  .custom-scroll::-webkit-scrollbar { width: 4px; }
+  .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+  .custom-scroll::-webkit-scrollbar-thumb { @apply bg-clan-border rounded-full; }
+  .custom-scroll::-webkit-scrollbar-thumb:hover { @apply bg-clan-gold/40; }
+
+  /* Gold divider */
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  }
+
+  /* Shimmer loading */
+  .shimmer-bg {
+    background: linear-gradient(90deg, #1A1A1A 25%, #242424 50%, #1A1A1A 75%);
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+
+  /* Input style */
+  .input-dark {
+    @apply bg-clan-dark-3 border border-clan-border rounded-lg px-4 py-2.5 text-sm
+           text-foreground placeholder-muted-foreground focus:outline-none focus:border-clan-gold
+           focus:ring-1 focus:ring-clan-gold/30 transition-all duration-200 w-full;
+  }
+}
+
+/* Tree SVG overrides */
+.rd3t-tree-container { width: 100% !important; height: 100% !important; }
+.rd3t-link { stroke: #D4AF37 !important; stroke-width: 2px !important; }
+.rd3t-node { cursor: pointer; }
+.rd3t-leaf-node { cursor: pointer; }
+.rd3t-tree-container text {
+  fill: #FFFFFF !important;
+  stroke: none !important;
+}
+
+/* Agar browser dark mode invert kar raha ho toh */
+.rd3t-svg text {
+  paint-order: stroke;
+  color: white;
+}
+
+/* Node labels fix */
+.rd3t-label__title {
+  fill: white !important;
+  font-weight: bold;
+}
