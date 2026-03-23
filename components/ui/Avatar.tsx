@@ -21,6 +21,9 @@ const roleRingMap: Record<UserRole, string> = {
   leader: 'ring-2 ring-clan-gold/60',
   admin:  'ring-2 ring-blue-400/60',
   member: 'ring-1 ring-clan-border',
+  scholar: 'ring-2 ring-purple-400/60',
+  blogger: 'ring-2 ring-emerald-400/60',
+  ancestor: 'ring-1 ring-gray-400/60',
 };
 
 export default function Avatar({ name, role = 'member', size = 'md', className }: AvatarProps) {

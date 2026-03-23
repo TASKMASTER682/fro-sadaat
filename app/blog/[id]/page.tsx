@@ -23,7 +23,7 @@ interface Blog {
   status: 'draft' | 'published';
   category: string;
   language: string;
-  createdBy: { name: string; role: string };
+  createdBy: { _id: string; name: string; role: string };
   createdAt: string;
   publishedAt?: string;
 }

@@ -1,4 +1,4 @@
-export type UserRole = 'leader' | 'admin' | 'member';
+export type UserRole = 'leader' | 'admin' | 'member' | 'scholar' | 'blogger' | 'ancestor';
 export type UserStatus = 'active' | 'inactive' | 'pending' | 'deceased';
 export type TransactionType = 'deposit' | 'withdrawal';
 export type TransactionStatus = 'pending' | 'approved' | 'rejected' | 'completed';

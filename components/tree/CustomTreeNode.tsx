@@ -87,7 +87,6 @@ export default function CustomTreeNode({ nodeDatum, onNodeClick, selectedNodeId 
       {/* Name label - full name */}
       <foreignObject x={-55} y={R + 4} width={110} height={50} style={{ overflow: 'visible' }}>
         <div
-          xmlns="http://www.w3.org/1999/xhtml"
           style={{
             textAlign: 'center',
             fontSize: '9px',
@@ -108,7 +107,6 @@ export default function CustomTreeNode({ nodeDatum, onNodeClick, selectedNodeId 
       {!!attributes?.contributions && attributes.contributions > 0 && (
         <foreignObject x={-55} y={R + 20} width={110} height={20} style={{ overflow: 'visible' }}>
           <div
-            xmlns="http://www.w3.org/1999/xhtml"
             style={{
               textAlign: 'center',
               fontSize: '7px',

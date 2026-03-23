@@ -35,6 +35,9 @@ export function getRoleBadgeClass(role: UserRole): string {
     leader: 'bg-clan-gold/15 text-clan-gold border border-clan-gold/30',
     admin: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
     member: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+    scholar: 'bg-purple-500/15 text-purple-400 border border-purple-500/30',
+    blogger: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+    ancestor: 'bg-gray-500/15 text-gray-400 border border-gray-500/30',
   };
   return map[role] || map.member;
 }

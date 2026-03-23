@@ -117,7 +117,6 @@ export default function ShajraPage() {
           
           <foreignObject x={-BOX_W/2 + 5} y={-BOX_H/2 + 5} width={BOX_W - 10} height={BOX_H - 10}>
             <div
-              xmlns="http://www.w3.org/1999/xhtml"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
