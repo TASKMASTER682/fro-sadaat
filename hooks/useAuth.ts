@@ -21,6 +21,7 @@ interface RegisterPayload {
   phone?: string;
   fatherId?: string;
   fatherName?: string;
+  isAlive?: boolean;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
