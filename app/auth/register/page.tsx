@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Loader2, Search, Check, UserPlus, ChevronRight } from 'lucide-react';
+import { Shield, Loader2, Check, UserPlus, ChevronRight, User, HeartPulse } from 'lucide-react';
 import { useAuthStore } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -18,26 +18,35 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     name: '', email: '', password: '', phone: '',
     fatherName: '', fatherId: '',
+    isAlive: true,
   });
   const [fatherResults, setFatherResults] = useState<FatherResult[]>([]);
   const [fatherSearching, setFatherSearching] = useState(false);
   const [selectedFather, setSelectedFather] = useState<FatherResult | null>(null);
 
-  const searchFather = async () => {
-    if (!form.fatherName.trim()) return;
+  const searchFather = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setFatherResults([]);
+      return;
+    }
     setFatherSearching(true);
     try {
-      const res = await api.get(`/auth/search-father?q=${encodeURIComponent(form.fatherName)}`);
-      console.log('API Response:', res.data);
+      const res = await api.get(`/auth/search-father?q=${encodeURIComponent(query)}`);
       const results = res.data.data || res.data.users || [];
       setFatherResults(results);
     } catch (err: any) {
       console.error('Search error:', err);
-      toast.error('Search failed');
     } finally {
       setFatherSearching(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchFather(form.fatherName);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [form.fatherName, searchFather]);
 
   const selectFather = (f: FatherResult) => {
     setSelectedFather(f);
@@ -57,6 +66,7 @@ export default function RegisterPage() {
         phone: form.phone,
         fatherId: form.fatherId || undefined,
         fatherName: !form.fatherId ? form.fatherName : undefined,
+        isAlive: form.isAlive,
       });
 
       if (result.pendingApproval) {
@@ -98,12 +108,12 @@ export default function RegisterPage() {
 
         {/* Steps indicator */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          {[1, 2].map((s) => (
+          {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-cinzel transition-all ${step >= s ? 'bg-clan-gold text-clan-black font-bold' : 'bg-clan-dark-3 text-muted-foreground border border-clan-border'}`}>
                 {step > s ? <Check size={13} /> : s}
               </div>
-              {s < 2 && <div className={`w-8 h-px ${step > s ? 'bg-clan-gold' : 'bg-clan-border'}`} />}
+              {s < 3 && <div className={`w-8 h-px ${step > s ? 'bg-clan-gold' : 'bg-clan-border'}`} />}
             </div>
           ))}
         </div>
@@ -146,6 +156,66 @@ export default function RegisterPage() {
 
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
+                <h2 className="font-cinzel text-foreground text-base font-semibold mb-5">Member Status</h2>
+                <p className="text-xs text-muted-foreground mb-5">
+                  Are you registering as an active member or as an ancestor (passed away)?
+                </p>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setForm({ ...form, isAlive: true })}
+                    className={`w-full p-4 rounded-xl border transition-all text-left ${
+                      form.isAlive === true
+                        ? 'border-emerald-500/50 bg-emerald-500/10'
+                        : 'border-clan-border bg-clan-dark-3 hover:border-clan-gold/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${form.isAlive === true ? 'bg-emerald-500/20' : 'bg-clan-dark-4'}`}>
+                        <User size={18} className={form.isAlive === true ? 'text-emerald-400' : 'text-muted-foreground'} />
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${form.isAlive === true ? 'text-emerald-400' : 'text-foreground'}`}>Active Member</p>
+                        <p className="text-xs text-muted-foreground">Living member of the clan</p>
+                      </div>
+                      {form.isAlive === true && <Check size={18} className="ml-auto text-emerald-400" />}
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setForm({ ...form, isAlive: false })}
+                    className={`w-full p-4 rounded-xl border transition-all text-left ${
+                      form.isAlive === false
+                        ? 'border-amber-500/50 bg-amber-500/10'
+                        : 'border-clan-border bg-clan-dark-3 hover:border-clan-gold/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${form.isAlive === false ? 'bg-amber-500/20' : 'bg-clan-dark-4'}`}>
+                        <HeartPulse size={18} className={form.isAlive === false ? 'text-amber-400' : 'text-muted-foreground'} />
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${form.isAlive === false ? 'text-amber-400' : 'text-foreground'}`}>Ancestor</p>
+                        <p className="text-xs text-muted-foreground">Passed away - will be marked as deceased</p>
+                      </div>
+                      {form.isAlive === false && <Check size={18} className="ml-auto text-amber-400" />}
+                    </div>
+                  </button>
+                </div>
+
+                <div className="flex gap-3 pt-5">
+                  <button onClick={() => setStep(1)} className="btn-ghost text-sm flex-1">Back</button>
+                  <button
+                    onClick={() => setStep(3)}
+                    className="btn-gold text-sm flex-1 flex items-center justify-center gap-2"
+                  >
+                    Next <ChevronRight size={15} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
                 <h2 className="font-cinzel text-foreground text-base font-semibold mb-2">Lineage Connection</h2>
                 <p className="text-xs text-muted-foreground mb-5">
                   Search for your father in the clan tree. If not found, your registration will be reviewed by an admin.
@@ -153,20 +223,16 @@ export default function RegisterPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1.5 block">Father&apos;s Name</label>
-                    <div className="flex gap-2">
+                    <div className="relative">
                       <input
-                        className="input-dark flex-1"
-                        placeholder="Search father&apos;s name…"
+                        className="input-dark w-full pr-10"
+                        placeholder="Type to search father's name…"
                         value={form.fatherName}
                         onChange={(e) => { setForm({ ...form, fatherName: e.target.value, fatherId: '' }); setSelectedFather(null); }}
                       />
-                      <button
-                        onClick={searchFather}
-                        disabled={fatherSearching}
-                        className="btn-ghost px-3 flex-shrink-0"
-                      >
-                        {fatherSearching ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-                      </button>
+                      {fatherSearching && (
+                        <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-clan-gold" />
+                      )}
                     </div>
                   </div>
 
@@ -207,7 +273,7 @@ export default function RegisterPage() {
                   )}
 
                   <div className="flex gap-3 pt-1">
-                    <button onClick={() => setStep(1)} className="btn-ghost text-sm flex-1">Back</button>
+                    <button onClick={() => setStep(2)} className="btn-ghost text-sm flex-1">Back</button>
                     <button
                       onClick={handleSubmit}
                       disabled={isLoading}

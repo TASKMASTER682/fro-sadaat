@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, Search, Loader2, UserCheck, UserX, GitMerge } from 'lucide-react';
+import { Clock, CheckCircle, Search, Loader2, UserCheck, UserX, GitMerge, HeartPulse } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { User } from '@/types';
-import { formatDate, formatDateTime } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
@@ -54,11 +53,14 @@ export default function AdminPendingPage() {
     }
   };
 
-  const handleAttach = async () => {
+  const handleAttach = async (isAlive: boolean) => {
     if (!attachingUser || !selectedFather) return toast.error('Select a father node');
     setIsAttaching(true);
     try {
-      await api.post(`/users/${attachingUser._id}/attach`, { fatherId: selectedFather._id });
+      await api.post(`/users/${attachingUser._id}/attach`, { 
+        fatherId: selectedFather._id,
+        isAlive,
+      });
       toast.success(`${attachingUser.name} attached to ${selectedFather.name}`);
       setAttachingUser(null);
       setSelectedFather(null);
@@ -128,6 +130,16 @@ export default function AdminPendingPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-cinzel text-foreground font-semibold">{u.name}</h3>
                       <Badge variant="amber">Pending</Badge>
+                      {u.isAlive === false && (
+                        <span className="px-2 py-0.5 text-[10px] rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
+                          ANCESTOR
+                        </span>
+                      )}
+                      {u.isAlive !== false && (
+                        <span className="px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                          ACTIVE MEMBER
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-0.5">{u.email || 'No email'}</p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -166,6 +178,34 @@ export default function AdminPendingPage() {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="mt-4 pt-4 border-t border-clan-border space-y-3"
                   >
+                    {/* isAlive toggle */}
+                    <div className="flex items-center gap-4 p-3 bg-clan-dark-2 rounded-lg border border-clan-border">
+                      <HeartPulse size={16} className="text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Mark as:</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setAttachingUser({ ...attachingUser, isAlive: true }); }}
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
+                            attachingUser?.isAlive !== false
+                              ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                              : 'border-clan-border text-muted-foreground hover:border-clan-gold/30'
+                          }`}
+                        >
+                          Active Member
+                        </button>
+                        <button
+                          onClick={() => { setAttachingUser({ ...attachingUser, isAlive: false }); }}
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
+                            attachingUser?.isAlive === false
+                              ? 'border-red-500/40 bg-red-500/15 text-red-400'
+                              : 'border-clan-border text-muted-foreground hover:border-clan-gold/30'
+                          }`}
+                        >
+                          Ancestor
+                        </button>
+                      </div>
+                    </div>
+
                     <p className="font-cinzel text-xs text-clan-gold/60 tracking-wider">ATTACH TO FATHER NODE</p>
                     <div className="flex gap-2">
                       <input
@@ -208,12 +248,15 @@ export default function AdminPendingPage() {
                       <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-2 rounded-lg border border-emerald-500/20">
                         <UserCheck size={12} />
                         Will attach <strong>{u.name}</strong> as child of <strong>{selectedFather.name}</strong>
+                        <span className="text-muted-foreground ml-2">
+                          ({attachingUser?.isAlive === false ? 'Ancestor' : 'Active Member'})
+                        </span>
                       </div>
                     )}
 
                     <div className="flex gap-2">
                       <button
-                        onClick={handleAttach}
+                        onClick={() => handleAttach(attachingUser?.isAlive !== false)}
                         disabled={!selectedFather || isAttaching}
                         className="btn-gold text-sm flex items-center gap-2"
                       >

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ShieldCheck, Clock, ScrollText, Users, Settings, ChevronRight, Bell } from 'lucide-react';
+import { ShieldCheck, Clock, ScrollText, Users, Settings, ChevronRight, Bell, Mail } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { useAuthStore } from '@/hooks/useAuth';
@@ -17,6 +17,14 @@ const adminLinks = [
     desc: 'Review and attach new member registrations to the family tree',
     badge: 'Action Required',
     badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+  },
+  {
+    href: '/admin/contacts',
+    icon: Mail,
+    title: 'Contact Messages',
+    desc: 'View messages from clan members and visitors',
+    badge: 'Communication',
+    badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
   },
   {
     href: '/admin/announcements',

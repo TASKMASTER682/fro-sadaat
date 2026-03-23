@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TreePine, LayoutDashboard, Vote, Banknote, Users,
   LogOut, Shield, ShieldCheck, ChevronRight, Menu, X,
+  BookOpen, Mail,
 } from 'lucide-react';
 import { useAuthStore } from '@/hooks/useAuth';
 import { getRoleBadgeClass, getInitials, cn } from '@/lib/utils';
@@ -14,10 +15,12 @@ import { getRoleBadgeClass, getInitials, cn } from '@/lib/utils';
 const navItems = [
   { href: '/shajra',     label: 'Shajra',     icon: TreePine,        desc: 'Family Tree',        roles: [] as string[] },
   { href: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard, desc: 'Overview',            roles: [] as string[] },
+  { href: '/blog',       label: 'Chronicles',  icon: BookOpen,        desc: 'Clan Blogs',         roles: [] as string[] },
   { href: '/members',    label: 'Members',    icon: Users,            desc: 'Member Directory',   roles: [] as string[] },
   { href: '/governance', label: 'Governance', icon: Vote,             desc: 'Proposals & Voting', roles: [] as string[] },
   { href: '/trust',      label: 'Trust Fund', icon: Banknote,         desc: 'Ledger & Finances',  roles: [] as string[] },
   { href: '/admin',      label: 'Admin',      icon: ShieldCheck,      desc: 'Management Panel',   roles: ['admin', 'leader'] },
+  { href: '/admin/contacts', label: 'Messages', icon: Mail,          desc: 'Contact Messages',   roles: ['scholar'] },
 ];
 
 function NavContent({ onClose }: { onClose?: () => void }) {
@@ -32,7 +35,7 @@ function NavContent({ onClose }: { onClose?: () => void }) {
             <Shield className="w-5 h-5 text-clan-black" />
           </div>
           <div>
-            <h1 className="font-cinzel text-clan-gold text-sm font-bold tracking-wider">أهل السادات گيل </h1>
+            <h1 className="font-cinzel text-clan-gold text-sm font-bold tracking-wider">کُنْجِ سادات</h1>
             <p className="font-cinzel text-clan-gold/50 text-[20px] tracking-widest">CLAN</p>
 
 

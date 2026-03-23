@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap');
 @import './responsive.css';
 
 @tailwind base;
@@ -97,6 +97,13 @@
            text-foreground placeholder-muted-foreground focus:outline-none focus:border-clan-gold
            focus:ring-1 focus:ring-clan-gold/30 transition-all duration-200 w-full;
   }
+
+  /* Urdu text styling */
+  .font-urdu {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    line-height: 2.2;
+    letter-spacing: 0.02em;
+  }
 }
 
 /* Tree SVG overrides */
@@ -119,4 +126,94 @@
 .rd3t-label__title {
   fill: white !important;
   font-weight: bold;
+}
+
+/* TipTap Royal Editor Styles */
+.royal-tiptap-editor {
+  min-height: 300px;
+  padding: 16px;
+  color: #e5e5e5;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.royal-tiptap-editor:focus {
+  outline: none;
+}
+
+.royal-tiptap-editor p {
+  margin-bottom: 1em;
+}
+
+.royal-tiptap-editor h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: #D4AF37;
+}
+
+.royal-tiptap-editor h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: #D4AF37;
+}
+
+.royal-tiptap-editor h3 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: #D4AF37;
+}
+
+.royal-tiptap-editor ul,
+.royal-tiptap-editor ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.royal-tiptap-editor li {
+  margin-bottom: 0.25em;
+}
+
+.royal-tiptap-editor blockquote {
+  border-left: 3px solid #D4AF37;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: #a0a0a0;
+  font-style: italic;
+}
+
+.royal-tiptap-editor strong {
+  font-weight: bold;
+  color: #F4D03F;
+}
+
+.royal-tiptap-editor em {
+  font-style: italic;
+}
+
+.royal-tiptap-editor s {
+  text-decoration: line-through;
+  color: #666;
+}
+
+.royal-tiptap-editor a {
+  color: #D4AF37;
+  text-decoration: underline;
+}
+
+.royal-tiptap-editor .is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #666;
+  pointer-events: none;
+  height: 0;
+}
+
+/* RTL support for Urdu */
+.royal-tiptap-editor[dir="rtl"] {
+  text-align: right;
+  font-family: 'Noto Nastaliq Urdu', serif;
+  line-height: 2.2;
 }

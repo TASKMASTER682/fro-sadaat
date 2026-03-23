@@ -87,9 +87,6 @@ export default function ShajraPage() {
       const BOX_W = 160;
       const BOX_H = 65;
       const BOX_RADIUS = 8;
-      const MAX_CHARS = 16;
-
-      const displayName = name.length > MAX_CHARS ? name.substring(0, MAX_CHARS) + '..' : name;
 
       return (
         <g onClick={() => handleNodeClick(nodeDatum)} style={{ cursor: 'pointer' }}>
@@ -118,27 +115,47 @@ export default function ShajraPage() {
             strokeDasharray={isStatic && !isSelected ? '6 3' : undefined}
           />
           
-          <text
-            x="0"
-            y="-8"
-            textAnchor="middle"
-            fill={textColor}
-            fontSize="13"
-            fontWeight="bold"
-          >
-            {displayName}
-          </text>
-
-          <text
-            x="0"
-            y="14"
-            textAnchor="middle"
-            fill={statusColor}
-            fontSize="11"
-            fontWeight="bold"
-          >
-            {isMatch ? 'MATCH!' : isDeceased ? 'DECEASED' : isFounder ? 'FOUNDER' : role === 'leader' ? 'LEADER' : role === 'admin' ? 'ADMIN' : 'MEMBER'}
-          </text>
+          <foreignObject x={-BOX_W/2 + 5} y={-BOX_H/2 + 5} width={BOX_W - 10} height={BOX_H - 10}>
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                textAlign: 'center',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              <p
+                style={{
+                  color: textColor,
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  margin: 0,
+                  wordBreak: 'break-word',
+                  lineHeight: '1.2',
+                  maxHeight: '32px',
+                  overflow: 'hidden',
+                }}
+                title={name}
+              >
+                {name}
+              </p>
+              <p
+                style={{
+                  color: statusColor,
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  margin: '4px 0 0 0',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {isMatch ? 'MATCH!' : isDeceased ? 'DECEASED' : isFounder ? 'FOUNDER' : role === 'leader' ? 'LEADER' : role === 'admin' ? 'ADMIN' : 'MEMBER'}
+              </p>
+            </div>
+          </foreignObject>
         </g>
       );
     },

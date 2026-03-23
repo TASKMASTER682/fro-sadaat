@@ -29,16 +29,9 @@ const COLORS: Record<string, string> = {
   lineage: 'text-clan-gold bg-clan-gold/10',
 };
 
-const SAMPLE_NOTIFICATIONS: Notification[] = [
-  { id: '1', type: 'deposit',  message: 'Zaid Khan recorded a deposit of ₹1,000', timestamp: new Date(Date.now() - 5 * 60000), read: false },
-  { id: '2', type: 'proposal', message: 'New proposal: "Emergency Fund Withdrawal" is open for voting', timestamp: new Date(Date.now() - 30 * 60000), read: false },
-  { id: '3', type: 'member',   message: 'New member registration pending approval', timestamp: new Date(Date.now() - 2 * 3600000), read: true },
-  { id: '4', type: 'lineage',  message: 'Omar Khan approved a lineage update', timestamp: new Date(Date.now() - 5 * 3600000), read: true },
-];
-
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>(SAMPLE_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const ref = useRef<HTMLDivElement>(null);
 
   const unread = notifications.filter((n) => !n.read).length;

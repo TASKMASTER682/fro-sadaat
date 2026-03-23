@@ -84,33 +84,43 @@ export default function CustomTreeNode({ nodeDatum, onNodeClick, selectedNodeId 
         <circle cx={R - 4} cy={-(R - 4)} r={4} fill="#F59E0B" stroke="#0A0A0A" strokeWidth={1.5} />
       )}
 
-      {/* Name label */}
-      <text
-        textAnchor="middle"
-        dominantBaseline="hanging"
-        fill="rgba(245,215,110,0.9)"
-        fontSize={9}
-        fontFamily="'Inter', sans-serif"
-        fontWeight="500"
-        y={R + 6}
-        style={{ pointerEvents: 'none' }}
-      >
-        {name.length > 14 ? name.slice(0, 13) + '…' : name}
-      </text>
+      {/* Name label - full name */}
+      <foreignObject x={-55} y={R + 4} width={110} height={50} style={{ overflow: 'visible' }}>
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style={{
+            textAlign: 'center',
+            fontSize: '9px',
+            fontFamily: 'Inter, sans-serif',
+            fontWeight: '500',
+            color: 'rgba(245,215,110,0.9)',
+            whiteSpace: 'nowrap',
+            overflow: 'visible',
+            pointerEvents: 'none',
+          }}
+          title={name}
+        >
+          {name}
+        </div>
+      </foreignObject>
 
       {/* Contribution label (if any) */}
       {!!attributes?.contributions && attributes.contributions > 0 && (
-        <text
-          textAnchor="middle"
-          dominantBaseline="hanging"
-          fill="rgba(212,175,55,0.5)"
-          fontSize={7.5}
-          fontFamily="'Inter', sans-serif"
-          y={R + 17}
-          style={{ pointerEvents: 'none' }}
-        >
-          ₹{(attributes.contributions / 1000).toFixed(1)}k
-        </text>
+        <foreignObject x={-55} y={R + 20} width={110} height={20} style={{ overflow: 'visible' }}>
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style={{
+              textAlign: 'center',
+              fontSize: '7px',
+              fontFamily: 'Inter, sans-serif',
+              color: 'rgba(212,175,55,0.5)',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}
+          >
+            ₹{(attributes.contributions / 1000).toFixed(1)}k
+          </div>
+        </foreignObject>
       )}
     </g>
   );
