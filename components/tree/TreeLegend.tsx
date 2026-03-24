@@ -7,6 +7,7 @@ const legendItems = [
   { color: '#22C55E', label: 'Active Member' },
   { color: '#EF4444', label: 'Deceased' },
   { color: '#F59E0B', label: 'Pending' },
+  { color: '#EC4899', label: 'Female', isCircle: true },
 ];
 
 export default function TreeLegend() {
@@ -16,13 +17,24 @@ export default function TreeLegend() {
       <div className="space-y-1.5">
         {legendItems.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
-            <div
-              className="w-5 h-5 rounded"
-              style={{ 
-                backgroundColor: '#1E293B',
-                border: `2px solid ${item.color}`
-              }}
-            />
+            {item.isCircle ? (
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ 
+                  backgroundColor: '#EC4899',
+                }}
+              >
+                <span className="text-[10px] text-white font-bold">♀</span>
+              </div>
+            ) : (
+              <div
+                className="w-5 h-5 rounded"
+                style={{ 
+                  backgroundColor: '#1E293B',
+                  border: `2px solid ${item.color}`
+                }}
+              />
+            )}
             <span className="text-[11px] text-white/80 font-inter">{item.label}</span>
           </div>
         ))}

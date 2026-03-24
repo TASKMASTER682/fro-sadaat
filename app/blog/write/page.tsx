@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 
 const canPublish = ['leader', 'admin', 'scholar'];
-const canWrite = ['leader', 'admin', 'scholar', 'blogger'];
+const canWrite = ['leader', 'scholar', 'blogger'];
 
 const categories = [
   { value: 'general', label: 'General' },
@@ -79,7 +79,7 @@ export default function WriteBlogPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 max-w-5xl mx-auto">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

@@ -22,6 +22,7 @@ interface RegisterPayload {
   fatherId?: string;
   fatherName?: string;
   isAlive?: boolean;
+  gender?: 'male' | 'female';
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({

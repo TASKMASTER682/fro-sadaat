@@ -41,34 +41,35 @@ export default function ConfirmModal({
           />
           <motion.div
             key="modal"
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50
-                       w-full max-w-md glass-panel rounded-2xl border border-clan-border p-6"
+            className="fixed inset-0 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-50
+                       w-full md:w-auto md:max-w-md md:rounded-2xl glass-panel rounded-none md:rounded-2xl border-0 md:border border-clan-border 
+                       p-5 md:p-6 flex flex-col justify-center items-center"
           >
-            <div className="flex items-start gap-4 mb-5">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${styles.icon}`}>
-                <AlertTriangle size={18} />
+            <div className="flex items-start gap-3 mb-4">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${styles.icon}`}>
+                <AlertTriangle size={16} />
               </div>
-              <div className="flex-1">
-                <h3 className="font-cinzel text-foreground font-semibold text-base">{title}</h3>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{message}</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-cinzel text-foreground font-semibold text-sm">{title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{message}</p>
               </div>
-              <button onClick={onCancel} className="text-muted-foreground hover:text-foreground transition-colors">
-                <X size={16} />
+              <button onClick={onCancel} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                <X size={18} />
               </button>
             </div>
 
             <div className="flex gap-3 justify-end">
-              <button onClick={onCancel} className="btn-ghost text-sm px-4">
+              <button onClick={onCancel} className="btn-ghost text-sm px-4 py-2.5 flex-1 md:flex-none">
                 {cancelLabel}
               </button>
               <button
                 onClick={onConfirm}
                 disabled={isLoading}
-                className={`text-sm px-5 py-2 rounded-lg font-medium transition-all ${styles.btn} disabled:opacity-50`}
+                className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-all flex-1 md:flex-none ${styles.btn} disabled:opacity-50`}
               >
                 {isLoading ? 'Processing…' : confirmLabel}
               </button>

@@ -4,12 +4,21 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ShieldCheck, Clock, ScrollText, Users, Settings, ChevronRight, Bell, Mail } from 'lucide-react';
+import { ShieldCheck, Clock, ScrollText, Users, Settings, ChevronRight, Bell, Mail, Crown } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { useAuthStore } from '@/hooks/useAuth';
 
-const adminLinks = [
+const allAdminLinks = [
+  {
+    href: '/admin/roles',
+    icon: Crown,
+    title: 'Role Management',
+    desc: 'Pass leadership and manage admin roles',
+    badge: 'Leadership',
+    badgeColor: 'text-clan-gold bg-clan-gold/10 border-clan-gold/20',
+    roles: ['leader'],
+  },
   {
     href: '/admin/pending',
     icon: Clock,
@@ -17,6 +26,7 @@ const adminLinks = [
     desc: 'Review and attach new member registrations to the family tree',
     badge: 'Action Required',
     badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    roles: ['leader'],
   },
   {
     href: '/admin/contacts',
@@ -25,6 +35,7 @@ const adminLinks = [
     desc: 'View messages from clan members and visitors',
     badge: 'Communication',
     badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    roles: ['admin', 'leader', 'scholar'],
   },
   {
     href: '/admin/announcements',
@@ -33,6 +44,7 @@ const adminLinks = [
     desc: 'Create and manage clan-wide announcements',
     badge: 'Communication',
     badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    roles: ['admin', 'leader', 'scholar'],
   },
   {
     href: '/admin/audit',
@@ -41,6 +53,7 @@ const adminLinks = [
     desc: 'Full action trail — every operation performed on the system',
     badge: 'Read Only',
     badgeColor: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    roles: ['leader'],
   },
   {
     href: '/members',
@@ -49,6 +62,7 @@ const adminLinks = [
     desc: 'Browse, search, and manage all clan members',
     badge: 'Full Access',
     badgeColor: 'text-clan-gold bg-clan-gold/10 border-clan-gold/20',
+    roles: ['admin', 'leader', 'scholar'],
   },
 ];
 
@@ -57,16 +71,16 @@ export default function AdminPage() {
   const { user, isInitialized } = useAuthStore();
 
   useEffect(() => {
-    if (isInitialized && user && !['admin', 'leader'].includes(user.role)) {
+    if (isInitialized && user && !['admin', 'leader', 'scholar'].includes(user.role)) {
       router.replace('/dashboard');
     }
   }, [user, isInitialized, router]);
 
-  if (!user || !['admin', 'leader'].includes(user.role)) return null;
+  if (!user || !['admin', 'leader', 'scholar'].includes(user.role)) return null;
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8">
         <PageHeader
           title="ADMIN PANEL"
           subtitle="Clan management and administration tools"
@@ -88,7 +102,9 @@ export default function AdminPage() {
 
         {/* Admin tools grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {adminLinks.map((link, i) => (
+          {allAdminLinks
+            .filter(link => link.roles.includes(user.role))
+            .map((link, i) => (
             <motion.div
               key={link.href}
               initial={{ opacity: 0, y: 12 }}

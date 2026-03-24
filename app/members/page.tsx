@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Search, Filter, Crown, Shield, User as UserIcon, RefreshCw, HeartPulse, Edit2, Trash2 } from 'lucide-react';
+import { Users, Search, Filter, Crown, Shield, User as UserIcon, RefreshCw, HeartPulse, Edit2, Trash2, Pin } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import Avatar from '@/components/ui/Avatar';
@@ -53,6 +53,7 @@ export default function MembersPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [deleteMember, setDeleteMember] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [pinning, setPinning] = useState<string | null>(null);
   const limit = 20;
 
   const canManage = user?.role === 'admin' || user?.role === 'leader' || user?.role === 'scholar';
@@ -128,11 +129,23 @@ export default function MembersPage() {
     }
   };
 
+  const handlePinMember = async (member: User) => {
+    setPinning(member._id);
+    try {
+      await api.post('/interests/pin', { toUserId: member._id });
+      toast.success(`Pinned ${member.name} - Interest sent for alliance`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to pin member');
+    } finally {
+      setPinning(null);
+    }
+  };
+
   const pages = Math.ceil(total / limit);
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         <PageHeader
           title="MEMBERS"
           subtitle={`${total} registered clan members`}
@@ -261,24 +274,40 @@ export default function MembersPage() {
                     </h3>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{member.email || '—'}</p>
                   </div>
-                  {canManage && (
-                    <div className="flex gap-1">
+                  <div className="flex gap-1">
+                    {user?._id !== member._id && (member as any).gender !== 'female' && member.isAlive && !member.isStatic && (
                       <button
-                        onClick={(e) => { e.stopPropagation(); setEditMember(member); }}
-                        className="p-1.5 rounded-lg hover:bg-clan-dark-3 text-muted-foreground hover:text-clan-gold transition-colors"
-                        title="Edit member status"
+                        onClick={(e) => { e.stopPropagation(); handlePinMember(member); }}
+                        disabled={pinning === member._id}
+                        className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-colors disabled:opacity-50"
+                        title="Pin - Express alliance interest"
                       >
-                        <Edit2 size={14} />
+                        {pinning === member._id ? (
+                          <div className="w-3.5 h-3.5 rounded-full border border-rose-400/30 border-t-rose-400 animate-spin" />
+                        ) : (
+                          <Pin size={14} />
+                        )}
                       </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setDeleteMember(member); }}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors"
-                        title="Remove from clan"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )}
+                    )}
+                    {canManage && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditMember(member); }}
+                          className="p-1.5 rounded-lg hover:bg-clan-dark-3 text-muted-foreground hover:text-clan-gold transition-colors"
+                          title="Edit member status"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteMember(member); }}
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors"
+                          title="Remove from clan"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -368,11 +397,11 @@ export default function MembersPage() {
 
         {/* Edit Member Modal */}
         {editMember && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass-panel rounded-2xl border border-clan-border p-6 w-full max-w-sm"
+              className="glass-panel rounded-2xl border border-clan-border p-5 md:p-6 w-full max-w-sm overflow-y-auto max-h-[90vh]"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-clan-gold/20 flex items-center justify-center">

@@ -91,7 +91,7 @@ export default function AdminPendingPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         <PageHeader
           title="PENDING APPROVALS"
           subtitle="Members awaiting lineage verification"

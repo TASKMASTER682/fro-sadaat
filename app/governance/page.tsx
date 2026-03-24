@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Vote, Plus, Clock, CheckCircle, XCircle,
-  ThumbsUp, ThumbsDown, Loader2, ChevronDown, ChevronUp,
+  Vote, Plus, Clock, CheckCircle, XCircle as XCircleIcon,
+  ThumbsUp, ThumbsDown, Loader2, ChevronDown, ChevronUp, Trash2,
+  ListChecks, Check,
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Proposal } from '@/types';
@@ -17,14 +18,14 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   draft: { label: 'Draft', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20', icon: Clock },
   open: { label: 'Open', color: 'text-blue-400 bg-blue-400/10 border-blue-400/20', icon: Clock },
   approved: { label: 'Approved', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', icon: CheckCircle },
-  rejected: { label: 'Rejected', color: 'text-red-400 bg-red-400/10 border-red-400/20', icon: XCircle },
+  rejected: { label: 'Rejected', color: 'text-red-400 bg-red-400/10 border-red-400/20', icon: XCircleIcon },
   executed: { label: 'Executed', color: 'text-clan-gold bg-clan-gold/10 border-clan-gold/20', icon: CheckCircle },
   expired: { label: 'Expired', color: 'text-muted-foreground bg-muted/10 border-muted/20', icon: Clock },
 };
 
 function ProposalCard({ proposal, onVote, currentUserId, userRole, onPublish, onDelete }: {
   proposal: Proposal;
-  onVote: (id: string, vote: 'approve' | 'reject') => void;
+  onVote: (id: string, vote: string) => void;
   currentUserId: string;
   userRole: string;
   onPublish?: (id: string) => void;
@@ -40,13 +41,16 @@ function ProposalCard({ proposal, onVote, currentUserId, userRole, onPublish, on
   );
   const canVote = !hasVoted && proposal.status === 'open' && proposal.createdBy !== currentUserId;
   const canPublish = proposal.status === 'draft' && userRole === 'leader';
+  const canDelete = userRole === 'leader' && (proposal.status === 'draft' || proposal.status === 'open');
   const totalVoters = proposal.votes.length;
   const approvals = proposal.approvalCount;
   const rejections = proposal.rejectionCount;
   const progress = proposal.requiredApprovals > 0 ? (approvals / proposal.requiredApprovals) * 100 : 0;
   const createdByName = proposal.createdBy && typeof proposal.createdBy === 'object' ? (proposal.createdBy as any).name : 'Unknown';
+  const isMultipleChoice = (proposal as any).votingType === 'multiple_choice';
+  const options = (proposal as any).options || [];
 
-  const handleVote = async (vote: 'approve' | 'reject') => {
+  const handleVote = async (vote: string) => {
     setVoting(true);
     await onVote(proposal._id, vote);
     setVoting(false);
@@ -95,49 +99,123 @@ function ProposalCard({ proposal, onVote, currentUserId, userRole, onPublish, on
         {/* Vote progress */}
         {proposal.status === 'open' && (
           <div className="mb-4">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-              <span>{approvals} / {proposal.requiredApprovals} approvals needed</span>
-              <span>{totalVoters} voted</span>
-            </div>
-            <div className="h-1.5 bg-clan-dark-3 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-emerald-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(progress, 100)}%` }}
-                transition={{ duration: 0.6 }}
-              />
-            </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-              <span className="text-emerald-400">{approvals} approve</span>
-              <span className="text-red-400">{rejections} reject</span>
-            </div>
+            {isMultipleChoice ? (
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Poll</span>
+                  <span>{totalVoters} voted</span>
+                </div>
+                {options.map((opt: any, idx: number) => {
+                  const optVotes = proposal.votes.filter((v: any) => v.vote === opt.text).length;
+                  const percentage = totalVoters > 0 ? (optVotes / totalVoters) * 100 : 0;
+                  const isLeading = options.every((o: any, i: number) => {
+                    const oVotes = proposal.votes.filter((v: any) => v.vote === o.text).length;
+                    return optVotes >= oVotes;
+                  });
+                  return (
+                    <div key={idx}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className={isLeading ? 'text-clan-gold font-medium' : 'text-foreground/70'}>
+                          {String.fromCharCode(65 + idx)}. {opt.text}
+                        </span>
+                        <span className={isLeading ? 'text-clan-gold' : 'text-muted-foreground'}>
+                          {optVotes} ({percentage.toFixed(0)}%)
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-clan-dark-3 rounded-full overflow-hidden">
+                        <motion.div
+                          className={cn('h-full rounded-full', isLeading ? 'bg-clan-gold' : 'bg-clan-dark-4')}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ duration: 0.6 }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                  <span>{approvals} / {proposal.requiredApprovals} approvals needed</span>
+                  <span>{totalVoters} voted</span>
+                </div>
+                <div className="h-1.5 bg-clan-dark-3 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-emerald-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(progress, 100)}%` }}
+                    transition={{ duration: 0.6 }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                  <span className="text-emerald-400">{approvals} approve</span>
+                  <span className="text-red-400">{rejections} reject</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Vote buttons */}
         {canVote && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleVote('approve')}
-              disabled={voting}
-              className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm
-                         bg-emerald-500/15 text-emerald-400 border border-emerald-500/20
-                         hover:bg-emerald-500/25 transition-all disabled:opacity-50"
-            >
-              {voting ? <Loader2 size={13} className="animate-spin" /> : <ThumbsUp size={13} />}
-              Approve
-            </button>
-            <button
-              onClick={() => handleVote('reject')}
-              disabled={voting}
-              className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm
-                         bg-red-500/15 text-red-400 border border-red-500/20
-                         hover:bg-red-500/25 transition-all disabled:opacity-50"
-            >
-              {voting ? <Loader2 size={13} className="animate-spin" /> : <ThumbsDown size={13} />}
-              Reject
-            </button>
-          </div>
+          <>
+            {isMultipleChoice ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-clan-gold/60 mb-2">
+                  <ListChecks size={13} />
+                  <span>Select your choice:</span>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {options.map((opt: any, idx: number) => {
+                    const optVotes = proposal.votes.filter((v: any) => v.vote === opt.text).length;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleVote(opt.text)}
+                        disabled={voting}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm
+                                   bg-clan-dark-3 text-foreground border border-clan-border
+                                   hover:bg-clan-dark-2 hover:border-clan-gold/30 transition-all disabled:opacity-50 text-left"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-clan-gold/10 text-clan-gold flex items-center justify-center text-xs font-bold flex-shrink-0">
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">{opt.text}</p>
+                          {opt.description && <p className="text-xs text-muted-foreground truncate">{opt.description}</p>}
+                        </div>
+                        <span className="text-xs text-muted-foreground">{optVotes} votes</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleVote('approve')}
+                  disabled={voting}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm
+                             bg-emerald-500/15 text-emerald-400 border border-emerald-500/20
+                             hover:bg-emerald-500/25 transition-all disabled:opacity-50"
+                >
+                  {voting ? <Loader2 size={13} className="animate-spin" /> : <ThumbsUp size={13} />}
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleVote('reject')}
+                  disabled={voting}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm
+                             bg-red-500/15 text-red-400 border border-red-500/20
+                             hover:bg-red-500/25 transition-all disabled:opacity-50"
+                >
+                  {voting ? <Loader2 size={13} className="animate-spin" /> : <ThumbsDown size={13} />}
+                  Reject
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {hasVoted && proposal.status === 'open' && (
@@ -153,23 +231,28 @@ function ProposalCard({ proposal, onVote, currentUserId, userRole, onPublish, on
                 className="flex-1 py-2 rounded-lg text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
                            hover:bg-emerald-500/30 transition-all font-medium"
               >
-                ✓ Approve & Publish
+                ✓ Publish
               </button>
-              {onDelete && (
-                <button
-                  onClick={() => onDelete(proposal._id)}
-                  className="flex-1 py-2 rounded-lg text-sm bg-red-500/20 text-red-400 border border-red-500/30
-                             hover:bg-red-500/30 transition-all font-medium"
-                >
-                  ✕ Reject Proposal
-                </button>
-              )}
             </div>
           </div>
         )}
 
         {proposal.status === 'draft' && userRole === 'admin' && (
           <p className="text-xs text-amber-400 text-center py-1">⏳ Awaiting leader approval</p>
+        )}
+
+        {canDelete && !canPublish && onDelete && (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={() => onDelete(proposal._id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
+                         bg-red-500/10 text-red-400 border border-red-500/20
+                         hover:bg-red-500/20 transition-all"
+            >
+              <Trash2 size={12} />
+              Delete Proposal
+            </button>
+          </div>
         )}
       </div>
 
@@ -218,7 +301,19 @@ export default function GovernancePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [form, setForm] = useState({ title: '', description: '', type: 'general' });
+  const [form, setForm] = useState<{
+    title: string;
+    description: string;
+    type: string;
+    votingType: 'approve_reject' | 'multiple_choice';
+    options: { text: string; description: string }[];
+  }>({
+    title: '',
+    description: '',
+    type: 'general',
+    votingType: 'approve_reject',
+    options: [],
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchProposals = async () => {
@@ -242,11 +337,18 @@ export default function GovernancePage() {
 
   const handleCreateProposal = async () => {
     if (!form.title || !form.description) return toast.error('Title and description required');
+    if (form.votingType === 'multiple_choice' && form.options.length < 2) {
+      return toast.error('Multiple choice needs at least 2 options');
+    }
     setIsSubmitting(true);
     try {
-      await api.post('/proposals', form);
+      const payload = {
+        ...form,
+        options: form.votingType === 'multiple_choice' ? form.options : undefined,
+      };
+      await api.post('/proposals', payload);
       toast.success('Proposal created');
-      setForm({ title: '', description: '', type: 'general' });
+      setForm({ title: '', description: '', type: 'general', votingType: 'approve_reject', options: [] });
       setShowForm(false);
       fetchProposals();
     } catch (err: any) {
@@ -256,7 +358,7 @@ export default function GovernancePage() {
     }
   };
 
-  const handleVote = async (id: string, vote: 'approve' | 'reject') => {
+  const handleVote = async (id: string, vote: string) => {
     try {
       await api.post(`/proposals/${id}/vote`, { vote });
       toast.success(`Vote recorded: ${vote}`);
@@ -291,7 +393,7 @@ export default function GovernancePage() {
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-cinzel text-clan-gold text-2xl font-bold tracking-wider">Clan GOVERNANCE</h1>
@@ -362,6 +464,98 @@ export default function GovernancePage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Voting Type */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Voting Type</label>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, votingType: 'approve_reject', options: [] })}
+                      className={cn(
+                        'flex-1 py-2.5 rounded-lg text-sm border transition-all',
+                        form.votingType === 'approve_reject'
+                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          : 'bg-clan-dark-3 text-muted-foreground border-clan-border hover:border-clan-gold/30'
+                      )}
+                    >
+                      <ThumbsUp size={14} className="inline mr-2" />
+                      Approve / Reject
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, votingType: 'multiple_choice', options: [{ text: '', description: '' }, { text: '', description: '' }] })}
+                      className={cn(
+                        'flex-1 py-2.5 rounded-lg text-sm border transition-all',
+                        form.votingType === 'multiple_choice'
+                          ? 'bg-clan-gold/15 text-clan-gold border-clan-gold/30'
+                          : 'bg-clan-dark-3 text-muted-foreground border-clan-border hover:border-clan-gold/30'
+                      )}
+                    >
+                      <ListChecks size={14} className="inline mr-2" />
+                      Multiple Choice
+                    </button>
+                  </div>
+                </div>
+
+                {/* Multiple Choice Options */}
+                {form.votingType === 'multiple_choice' && (
+                  <div className="space-y-3 p-4 bg-clan-dark-3/50 rounded-xl border border-clan-gold/20">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-clan-gold font-medium">Options (2-6)</label>
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, options: [...form.options, { text: '', description: '' }] })}
+                        disabled={form.options.length >= 6}
+                        className="text-xs text-clan-gold hover:text-clan-gold/80 disabled:opacity-50"
+                      >
+                        + Add Option
+                      </button>
+                    </div>
+                    {form.options.map((opt, idx) => (
+                      <div key={idx} className="flex gap-2 items-start">
+                        <div className="w-6 h-6 rounded-full bg-clan-gold/10 text-clan-gold flex items-center justify-center text-xs font-bold flex-shrink-0 mt-1.5">
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <input
+                            className="input-dark text-sm"
+                            placeholder={`Option ${String.fromCharCode(65 + idx)} text`}
+                            value={opt.text}
+                            onChange={(e) => {
+                              const newOpts = [...form.options];
+                              newOpts[idx].text = e.target.value;
+                              setForm({ ...form, options: newOpts });
+                            }}
+                          />
+                          <input
+                            className="input-dark text-xs"
+                            placeholder="Description (optional)"
+                            value={opt.description}
+                            onChange={(e) => {
+                              const newOpts = [...form.options];
+                              newOpts[idx].description = e.target.value;
+                              setForm({ ...form, options: newOpts });
+                            }}
+                          />
+                        </div>
+                        {form.options.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newOpts = form.options.filter((_, i) => i !== idx);
+                              setForm({ ...form, options: newOpts });
+                            }}
+                            className="text-red-400 hover:text-red-300 p-1"
+                          >
+                            <XCircleIcon size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs text-muted-foreground mb-1.5 block">Description</label>
                   <textarea

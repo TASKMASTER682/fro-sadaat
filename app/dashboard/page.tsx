@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, Wallet, Clock, AlertCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Users, TrendingUp, Wallet, Clock, AlertCircle, ArrowUpRight, ArrowDownRight, Heart, Check, X, Pin } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardAnnouncements from '@/components/DashboardAnnouncements';
 import { DashboardStats, Transaction, User } from '@/types';
 import { formatCurrency, formatDateTime, cn } from '@/lib/utils';
 import api from '@/lib/api';
 import { useAuthStore } from '@/hooks/useAuth';
+import toast from 'react-hot-toast';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 16 },
@@ -41,6 +42,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentTxns, setRecentTxns] = useState<Transaction[]>([]);
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
+  const [receivedInterests, setReceivedInterests] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +60,10 @@ export default function DashboardPage() {
             setPendingUsers(pendRes.data.data);
           } catch { /* non-admin */ }
         }
+        try {
+          const intRes = await api.get('/interests');
+          setReceivedInterests(intRes.data.data.received.filter((i: any) => i.status === 'pending'));
+        } catch { /* non-interest */ }
       } catch (err) {
         console.error(err);
       } finally {
@@ -66,6 +72,16 @@ export default function DashboardPage() {
     };
     load();
   }, [user]);
+
+  const handleRespondInterest = async (interestId: string, status: 'accepted' | 'rejected') => {
+    try {
+      await api.put(`/interests/${interestId}/respond`, { status });
+      toast.success(status === 'accepted' ? 'Interest accepted' : 'Interest rejected');
+      setReceivedInterests(prev => prev.filter(i => i._id !== interestId));
+    } catch (err) {
+      toast.error('Failed to respond');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -110,7 +126,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-cinzel text-clan-gold text-2xl font-bold tracking-wider">DASHBOARD</h1>
@@ -264,6 +280,68 @@ export default function DashboardPage() {
             </div>
           </motion.div>
         </div>
+
+        {/* Marriage Interests Section */}
+        {receivedInterests.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="glass-panel rounded-2xl p-6 border border-rose-500/20"
+          >
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-rose-400" />
+                <h2 className="font-cinzel text-rose-400 text-sm tracking-wider">MARRIAGE INTERESTS</h2>
+              </div>
+              <span className="text-xs text-rose-400 bg-rose-400/10 px-2 py-0.5 rounded-full">
+                {receivedInterests.length} pending
+              </span>
+            </div>
+            <div className="space-y-2.5">
+              {receivedInterests.map((interest) => (
+                <div key={interest._id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-clan-dark-3 border border-rose-500/10">
+                  <div className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center
+                                  text-xs font-cinzel font-bold text-rose-400 flex-shrink-0">
+                    {interest.fromUser?.name?.charAt(0) || '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground/90">{interest.fromUser?.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={cn(
+                        'px-2 py-0.5 rounded-full text-[10px] font-medium',
+                        interest.type === 'pin' && 'bg-amber-500/20 text-amber-400',
+                        interest.type === 'interested' && 'bg-rose-500/20 text-rose-400',
+                        interest.type === 'suggestion' && 'bg-emerald-500/20 text-emerald-400'
+                      )}>
+                        {interest.type === 'pin' ? 'PIN' : interest.type === 'suggestion' ? 'SUGGESTION' : 'INTERESTED'}
+                      </span>
+                      {interest.message && (
+                        <p className="text-xs text-muted-foreground truncate">{interest.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => handleRespondInterest(interest._id, 'accepted')}
+                      className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 transition-colors"
+                      title="Accept"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleRespondInterest(interest._id, 'rejected')}
+                      className="p-1.5 rounded-lg bg-slate-500/15 hover:bg-slate-500/25 text-slate-400 transition-colors"
+                      title="Reject"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </AppLayout>
   );

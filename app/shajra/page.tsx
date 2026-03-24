@@ -53,6 +53,7 @@ export default function ShajraPage() {
       const isDeceased = !isAlive;
       const isStatic = nodeDatum.attributes?.isStatic;
       const isFounder = isStatic && role === 'leader';
+      const isFemale = nodeDatum.attributes?.gender === 'female';
       const name = nodeDatum.name || '';
       const isMatch = searchQuery && name.toLowerCase().includes(searchQuery.toLowerCase());
       
@@ -114,6 +115,17 @@ export default function ShajraPage() {
             strokeWidth={isSelected ? 3 : 2.5}
             strokeDasharray={isStatic && !isSelected ? '6 3' : undefined}
           />
+
+          {isFemale && (
+            <circle
+              cx={BOX_W/2 - 15}
+              cy={-BOX_H/2 + 12}
+              r={10}
+              fill="#EC4899"
+              stroke="#BE185D"
+              strokeWidth="1.5"
+            />
+          )}
           
           <foreignObject x={-BOX_W/2 + 5} y={-BOX_H/2 + 5} width={BOX_W - 10} height={BOX_H - 10}>
             <div
@@ -152,6 +164,7 @@ export default function ShajraPage() {
                 }}
               >
                 {isMatch ? 'MATCH!' : isDeceased ? 'DECEASED' : isFounder ? 'FOUNDER' : role === 'leader' ? 'LEADER' : role === 'admin' ? 'ADMIN' : 'MEMBER'}
+                {isFemale && !isMatch && !isDeceased && !isFounder && role !== 'leader' && role !== 'admin' && ' ♀'}
               </p>
             </div>
           </foreignObject>

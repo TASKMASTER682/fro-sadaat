@@ -28,6 +28,28 @@
     --ring: 45 65% 52%;
     --radius: 0.75rem;
   }
+
+  html.light {
+    --background: 0 0% 100%;
+    --foreground: 45 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 45 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 45 30% 15%;
+    --primary: 45 65% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 20% 96%;
+    --secondary-foreground: 45 30% 15%;
+    --muted: 45 20% 94%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 45 65% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 45 10% 90%;
+    --input: 45 10% 94%;
+    --ring: 45 65% 40%;
+  }
 }
 
 @layer base {
@@ -38,15 +60,100 @@
       radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
   }
+  html.light body {
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+  }
   h1, h2, h3 { @apply font-cinzel; }
 }
 
 @layer components {
-  /* Glassmorphism panel */
+  /* Glassmorphism panel - Dark Mode */
   .glass-panel {
     @apply bg-clan-dark-2 border border-clan-border backdrop-blur-xl;
     background: linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(17,17,17,0.98) 100%);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(212, 175, 55, 0.08);
+  }
+
+  /* Glassmorphism panel - Light Mode */
+  html.light .glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  }
+
+  /* Light mode background */
+  html.light {
+    background-color: #faf9f7 !important;
+  }
+
+  html.light body {
+    background-color: #faf9f7 !important;
+  }
+
+  /* Light mode text colors */
+  html.light .text-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  html.light .text-muted-foreground {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* Light mode hover effects */
+  html.light .hover\:bg-clan-dark-3:hover {
+    background-color: hsl(var(--muted)) !important;
+  }
+
+  /* Light mode gold accent */
+  html.light .text-clan-gold {
+    color: #A0892A !important;
+  }
+
+  /* Light mode hover states */
+  html.light .hover\:bg-clan-dark-3:hover {
+    background-color: hsl(var(--muted)) !important;
+  }
+
+  html.light .bg-clan-dark-3 {
+    background-color: hsl(var(--secondary)) !important;
+  }
+
+  html.light .bg-clan-dark-4 {
+    background-color: hsl(var(--muted)) !important;
+  }
+
+  html.light .border-clan-border {
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* Light mode nav hover */
+  html.light .group-hover\:bg-clan-dark-4 {
+    background-color: hsl(var(--muted)) !important;
+  }
+
+  /* Light mode gold divider */
+  html.light .gold-divider {
+    background: linear-gradient(90deg, transparent, #A0892A, transparent);
+  }
+
+  /* Light mode bg-clan-black */
+  html.light .bg-clan-black {
+    background-color: hsl(var(--background)) !important;
+  }
+
+  /* Light mode nav active state */
+  html.light .bg-clan-gold\/10 {
+    background-color: rgba(160, 137, 42, 0.1) !important;
+  }
+
+  html.light .border-clan-gold\/20 {
+    border-color: rgba(160, 137, 42, 0.2) !important;
+  }
+
+  /* Light mode sidebar border */
+  html.light .glass-panel {
+    border-color: hsl(var(--border)) !important;
   }
 
   /* Gold button */
@@ -54,6 +161,10 @@
     @apply bg-gold-gradient text-clan-black font-cinzel font-semibold px-6 py-2.5 rounded-lg
            transition-all duration-200 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]
            active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  html.light .btn-gold {
+    @apply bg-gold-gradient text-clan-black;
   }
 
   /* Ghost button */
@@ -82,6 +193,11 @@
   .gold-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  }
+
+  /* Safe bottom for mobile modals (iPhone notch support) */
+  .safe-bottom {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 
   /* Shimmer loading */

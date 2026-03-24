@@ -1,31 +1,144 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TreePine, LayoutDashboard, Vote, Banknote, Users,
   LogOut, Shield, ShieldCheck, ChevronRight, Menu, X,
-  BookOpen, Mail,
+  BookOpen, Mail, Sun, Moon, Images, UserCircle, Heart,
+  Bell, Trash2, XCircle,
 } from 'lucide-react';
 import { useAuthStore } from '@/hooks/useAuth';
 import { getRoleBadgeClass, getInitials, cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/shajra',     label: 'Shajra',     icon: TreePine,        desc: 'Family Tree',        roles: [] as string[] },
-  { href: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard, desc: 'Overview',            roles: [] as string[] },
-  { href: '/blog',       label: 'Chronicles',  icon: BookOpen,        desc: 'Clan Blogs',         roles: [] as string[] },
-  { href: '/members',    label: 'Members',    icon: Users,            desc: 'Member Directory',   roles: [] as string[] },
-  { href: '/governance', label: 'Governance', icon: Vote,             desc: 'Proposals & Voting', roles: [] as string[] },
-  { href: '/trust',      label: 'Trust Fund', icon: Banknote,         desc: 'Ledger & Finances',  roles: [] as string[] },
-  { href: '/admin',      label: 'Admin',      icon: ShieldCheck,      desc: 'Management Panel',   roles: ['admin', 'leader'] },
-  { href: '/admin/contacts', label: 'Messages', icon: Mail,          desc: 'Contact Messages',   roles: ['scholar'] },
+  { href: '/shajra',     label: 'Shajra',         icon: TreePine,        desc: 'Family Tree',        roles: [] as string[] },
+  { href: '/ladies',     label: 'Ladies',        icon: Users,           desc: 'Female Members',    roles: [] as string[] },
+  { href: '/spouse',     label: 'Finding Spouse', icon: Heart,           desc: 'Spouse Search',     roles: [] as string[] },
+  { href: '/dashboard',  label: 'Dashboard',      icon: LayoutDashboard, desc: 'Overview',           roles: [] as string[] },
+  { href: '/profile',    label: 'Profile',        icon: UserCircle,      desc: 'My Profile',         roles: [] as string[] },
+  { href: '/gallery',    label: 'Gallery',         icon: Images,          desc: 'Clan Photos',        roles: [] as string[] },
+  { href: '/blog',       label: 'Chronicles',      icon: BookOpen,        desc: 'Clan Blogs',         roles: [] as string[] },
+  { href: '/members',    label: 'Members',         icon: Users,           desc: 'Member Directory',  roles: [] as string[] },
+  { href: '/governance', label: 'Governance',      icon: Vote,            desc: 'Proposals & Voting', roles: [] as string[] },
+  { href: '/trust',      label: 'Trust Fund',      icon: Banknote,        desc: 'Ledger & Finances',  roles: [] as string[] },
+  { href: '/admin',      label: 'Admin',           icon: ShieldCheck,     desc: 'Management Panel',  roles: ['admin', 'leader'] },
+  { href: '/admin/contacts', label: 'Messages',    icon: Mail,            desc: 'Contact Messages',  roles: ['scholar'] },
 ];
+
+function ThemeToggle({ className = '' }: { className?: string }) {
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light') {
+      setIsDark(false);
+      document.documentElement.classList.add('light');
+    } else {
+      setIsDark(true);
+      document.documentElement.classList.remove('light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (isDark) {
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+      setIsDark(false);
+    } else {
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+      setIsDark(true);
+    }
+  };
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className={cn(
+        'w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300',
+        'bg-clan-dark-3 hover:bg-clan-dark-4 border border-clan-border hover:border-clan-gold/30',
+        className
+      )}
+      title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={isDark ? 'moon' : 'sun'}
+          initial={{ rotate: -90, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: 90, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {isDark ? (
+            <Sun size={18} className="text-clan-gold" />
+          ) : (
+            <Moon size={18} className="text-clan-gold" />
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </button>
+  );
+}
 
 function NavContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const apiModule = (await import('@/lib/api')).default;
+      const res = await apiModule.get('/notifications');
+      setNotifications(res.data.data);
+      setUnreadCount(res.data.unreadCount);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      const apiModule = (await import('@/lib/api')).default;
+      await apiModule.put(`/notifications/${id}/read`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to mark as read:', err);
+    }
+  };
+
+  const deleteNotification = async (id: string) => {
+    try {
+      const apiModule = (await import('@/lib/api')).default;
+      await apiModule.delete(`/notifications/${id}`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    try {
+      const apiModule = (await import('@/lib/api')).default;
+      await apiModule.delete('/notifications/clear-all');
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Failed to clear notifications:', err);
+    }
+  };
+
+  const canManageNotifications = ['admin', 'leader', 'scholar'].includes(user?.role || '');
 
   return (
     <>
@@ -37,15 +150,90 @@ function NavContent({ onClose }: { onClose?: () => void }) {
           <div>
             <h1 className="font-cinzel text-clan-gold text-sm font-bold tracking-wider">کُنْجِ سادات</h1>
             <p className="font-cinzel text-clan-gold/50 text-[20px] tracking-widest">CLAN</p>
-
-
           </div>
         </div>
-        {onClose && (
-          <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-foreground p-1 transition-colors">
-            <X size={18} />
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 bg-clan-dark-3 hover:bg-clan-dark-4 border border-clan-border hover:border-clan-gold/30 relative"
+            >
+              <Bell size={18} className="text-muted-foreground" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {showNotifications && (
+              <div className="absolute right-0 top-full mt-2 w-80 glass-panel rounded-xl border border-clan-border shadow-xl z-50 max-h-96 overflow-y-auto">
+                <div className="p-3 border-b border-clan-border/50 flex items-center justify-between">
+                  <h3 className="font-cinzel text-clan-gold text-xs tracking-wider">NOTIFICATIONS</h3>
+                  <div className="flex items-center gap-2">
+                    {canManageNotifications && notifications.length > 0 && (
+                      <button 
+                        onClick={clearAllNotifications} 
+                        className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
+                      >
+                        <Trash2 size={12} />
+                        Clear All
+                      </button>
+                    )}
+                    {unreadCount > 0 && (
+                      <button onClick={fetchNotifications} className="text-xs text-muted-foreground hover:text-clan-gold">
+                        Refresh
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="max-h-72 overflow-y-auto custom-scroll">
+                  {notifications.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-sm py-8">No notifications</p>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif._id}
+                        className={cn(
+                          'p-3 border-b border-clan-border/30 transition-colors',
+                          !notif.isRead && 'bg-clan-gold/5',
+                          'group relative'
+                        )}
+                      >
+                        <div 
+                          onClick={() => !notif.isRead && markAsRead(notif._id)} 
+                          className="cursor-pointer"
+                        >
+                          <p className="text-sm font-medium text-foreground pr-6">{notif.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{notif.message}</p>
+                          <p className="text-[10px] text-muted-foreground/50 mt-2">
+                            {new Date(notif.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {canManageNotifications && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notif._id);
+                            }}
+                            className="absolute top-3 right-3 p-1 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <XCircle size={14} />
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <ThemeToggle />
+          {onClose && (
+            <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-foreground p-1 transition-colors">
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto custom-scroll">

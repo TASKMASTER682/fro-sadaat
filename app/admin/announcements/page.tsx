@@ -94,7 +94,7 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
         <PageHeader
           title="ANNOUNCEMENTS"
           subtitle="Create and manage clan announcements"

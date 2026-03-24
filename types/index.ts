@@ -11,7 +11,9 @@ export interface User {
   email?: string;
   phone?: string;
   bio?: string;
+  description?: string;
   avatar?: string;
+  gender?: 'male' | 'female';
   fatherId?: string | User | null;
   isStatic: boolean;
   isAlive: boolean;
@@ -46,11 +48,18 @@ export interface Vote {
   votedAt: string;
 }
 
+export interface ProposalOption {
+  text: string;
+  description?: string;
+}
+
 export interface Proposal {
   _id: string;
   title: string;
   description: string;
   type: ProposalType;
+  votingType?: 'approve_reject' | 'multiple_choice';
+  options?: ProposalOption[];
   createdBy: string | User;
   status: ProposalStatus;
   votes: Vote[];
@@ -85,6 +94,7 @@ export interface TreeNode {
     contributions?: number;
     isStatic?: boolean;
     isAlive?: boolean;
+    gender?: 'male' | 'female';
     email?: string;
     joinedAt?: string;
     pendingApproval?: boolean;

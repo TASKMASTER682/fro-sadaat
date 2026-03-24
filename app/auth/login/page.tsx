@@ -57,7 +57,7 @@ export default function LoginPage() {
           >
             <Shield size={28} className="text-clan-black" />
           </motion.div>
-          <h1 className="font-cinzel text-clan-gold text-2xl font-bold tracking-widest">DIGITAL CLAN</h1>
+          <h1 className="font-cinzel text-clan-gold text-2xl font-bold tracking-widest">Kunj-e-Sadaat</h1>
           <p className="text-muted-foreground text-sm mt-1 tracking-wider">Lineage · Governance · Trust</p>
         </div>
 

@@ -91,7 +91,7 @@ export default function TrustPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-cinzel text-clan-gold text-2xl font-bold tracking-wider">TRUST FUND</h1>

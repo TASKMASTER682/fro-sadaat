@@ -33,7 +33,7 @@ const categoryLabels: Record<string, { en: string; ur: string }> = {
   events: { en: 'Events', ur: 'مناسبت' },
 };
 
-const canWrite = ['leader', 'admin', 'scholar', 'blogger'];
+const canWrite = ['leader', 'scholar', 'blogger'];
 
 export default function BlogPage() {
   const { user } = useAuthStore();
@@ -78,7 +78,7 @@ export default function BlogPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

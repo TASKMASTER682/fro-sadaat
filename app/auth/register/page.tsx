@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Loader2, Check, UserPlus, ChevronRight, User, HeartPulse } from 'lucide-react';
+import { Shield, Loader2, Check, UserPlus, ChevronRight, User, HeartPulse, UserCircle } from 'lucide-react';
 import { useAuthStore } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -19,6 +19,7 @@ export default function RegisterPage() {
     name: '', email: '', password: '', phone: '',
     fatherName: '', fatherId: '',
     isAlive: true,
+    gender: 'male' as 'male' | 'female',
   });
   const [fatherResults, setFatherResults] = useState<FatherResult[]>([]);
   const [fatherSearching, setFatherSearching] = useState(false);
@@ -58,15 +59,18 @@ export default function RegisterPage() {
     if (!form.name || !form.email || !form.password) {
       return toast.error('Please fill all required fields');
     }
+    if (!form.fatherId) {
+      return toast.error('Please select your father from the clan tree');
+    }
     try {
       const result = await register({
         name: form.name,
         email: form.email,
         password: form.password,
         phone: form.phone,
-        fatherId: form.fatherId || undefined,
-        fatherName: !form.fatherId ? form.fatherName : undefined,
+        fatherId: form.fatherId,
         isAlive: form.isAlive,
+        gender: form.gender,
       });
 
       if (result.pendingApproval) {
@@ -144,6 +148,42 @@ export default function RegisterPage() {
                     <input className="input-dark" placeholder="+91-XXXXXXXXXX" value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                   </div>
+
+                  {/* Gender Selection */}
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">Gender *</label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, gender: 'male' })}
+                        className={`flex-1 p-3 rounded-xl border transition-all ${
+                          form.gender === 'male'
+                            ? 'border-blue-500/50 bg-blue-500/10'
+                            : 'border-clan-border bg-clan-dark-3 hover:border-clan-gold/30'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <User size={20} className={form.gender === 'male' ? 'text-blue-400' : 'text-muted-foreground'} />
+                          <span className={`text-xs ${form.gender === 'male' ? 'text-blue-400' : 'text-muted-foreground'}`}>Male</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, gender: 'female' })}
+                        className={`flex-1 p-3 rounded-xl border transition-all ${
+                          form.gender === 'female'
+                            ? 'border-pink-500/50 bg-pink-500/10'
+                            : 'border-clan-border bg-clan-dark-3 hover:border-clan-gold/30'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <UserCircle size={20} className={form.gender === 'female' ? 'text-pink-400' : 'text-muted-foreground'} />
+                          <span className={`text-xs ${form.gender === 'female' ? 'text-pink-400' : 'text-muted-foreground'}`}>Female</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
                   <button
                     onClick={() => { if (form.name && form.email && form.password) setStep(2); else toast.error('Fill required fields'); }}
                     className="btn-gold w-full flex items-center justify-center gap-2"
@@ -218,7 +258,7 @@ export default function RegisterPage() {
               <motion.div key="step3" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
                 <h2 className="font-cinzel text-foreground text-base font-semibold mb-2">Lineage Connection</h2>
                 <p className="text-xs text-muted-foreground mb-5">
-                  Search for your father in the clan tree. If not found, your registration will be reviewed by an admin.
+                  Search and select your father from the clan tree. This is required to complete registration.
                 </p>
                 <div className="space-y-4">
                   <div>
@@ -268,7 +308,13 @@ export default function RegisterPage() {
 
                   {!selectedFather && form.fatherName && (
                     <p className="text-xs text-amber-400 bg-amber-500/10 rounded-lg px-3 py-2 border border-amber-500/20">
-                      ⚠ Father not found — registration will require admin approval
+                      ⚠ Father not found — please search again or select from results
+                    </p>
+                  )}
+
+                  {!form.fatherId && (
+                    <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2 border border-red-500/20">
+                      ⚠ Father selection is required to complete registration
                     </p>
                   )}
 
@@ -276,7 +322,7 @@ export default function RegisterPage() {
                     <button onClick={() => setStep(2)} className="btn-ghost text-sm flex-1">Back</button>
                     <button
                       onClick={handleSubmit}
-                      disabled={isLoading}
+                      disabled={isLoading || !form.fatherId}
                       className="btn-gold text-sm flex-1 flex items-center justify-center gap-2"
                     >
                       {isLoading ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}

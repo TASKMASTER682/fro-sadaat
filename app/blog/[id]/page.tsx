@@ -29,7 +29,7 @@ interface Blog {
 }
 
 const canPublish = ['leader', 'admin', 'scholar'];
-const canWrite = ['leader', 'admin', 'scholar', 'blogger'];
+const canWrite = ['leader', 'scholar', 'blogger'];
 
 export default function BlogDetailPage() {
   const params = useParams();
@@ -109,7 +109,7 @@ export default function BlogDetailPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
