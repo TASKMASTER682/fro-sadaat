@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Crown, Shield, User, Users, Loader2, ChevronRight, Check, X } from 'lucide-react';
+import { Crown, Shield, User, Users, Loader2, ChevronRight, Check, X, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { useAuthStore } from '@/hooks/useAuth';
@@ -107,6 +107,21 @@ export default function RoleManagementPage() {
       fetchMembers();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to remove scholar role');
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const deleteMember = async (targetId: string, targetName: string) => {
+    if (!confirm(`Delete ${targetName} from the clan? This action cannot be undone.`)) return;
+    
+    setProcessing(targetId);
+    try {
+      await api.delete(`/users/${targetId}`);
+      toast.success(`${targetName} has been removed from the clan.`);
+      fetchMembers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete member');
     } finally {
       setProcessing(null);
     }
@@ -390,6 +405,18 @@ export default function RoleManagementPage() {
                                 >
                                   <X size={12} />
                                   Remove Scholar
+                                </button>
+                              )}
+                              {/* Leader can delete member */}
+                              {user.role === 'leader' && (
+                                <button
+                                  onClick={() => deleteMember(member._id, member.name)}
+                                  disabled={processing === member._id}
+                                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600/15 text-red-300 border border-red-600/30 hover:bg-red-600/25 transition-colors disabled:opacity-50 flex items-center gap-1"
+                                  title="Delete Member"
+                                >
+                                  <Trash2 size={12} />
+                                  Delete
                                 </button>
                               )}
                             </div>

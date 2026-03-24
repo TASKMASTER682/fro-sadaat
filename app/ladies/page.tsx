@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Users, User, Heart, Crown, Star, Search, Filter, X, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, User, Heart, Crown, Star, Search, Filter, X, ExternalLink, HeartPulse, UserCircle, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { useAuthStore } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 interface Lady {
   _id: string;
@@ -29,6 +30,8 @@ export default function LadiesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deceased' | 'ancestor'>('all');
   const [selectedLady, setSelectedLady] = useState<Lady | null>(null);
+  const [editLady, setEditLady] = useState<Lady | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchLadies = useCallback(async () => {
     const api = (await import('@/lib/api')).default;
@@ -44,6 +47,36 @@ export default function LadiesPage() {
   }, []);
 
   useEffect(() => { fetchLadies(); }, [fetchLadies]);
+
+  const handleUpdateIsAlive = async (isAlive: boolean) => {
+    if (!editLady) return;
+    const api = (await import('@/lib/api')).default;
+    setIsUpdating(true);
+    try {
+      await api.put(`/users/${editLady._id}`, { isAlive });
+      toast.success(`Marked as ${isAlive ? 'Active Member' : 'Ancestor'}`);
+      setEditLady(null);
+      fetchLadies();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async (ladyId: string, ladyName: string) => {
+    const api = (await import('@/lib/api')).default;
+    if (!confirm(`Delete ${ladyName} from the clan? This action cannot be undone.`)) return;
+    try {
+      await api.delete(`/users/${ladyId}`);
+      toast.success(`${ladyName} has been removed from the clan.`);
+      fetchLadies();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete member');
+    }
+  };
+
+  const canManage = ['admin', 'leader'].includes(user?.role || '');
 
   const filteredLadies = ladies.filter(lady => {
     const matchesSearch = !searchQuery || 
@@ -191,9 +224,8 @@ export default function LadiesPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.03 }}
-                    onClick={() => setSelectedLady(lady)}
                     className={cn(
-                      'glass-panel rounded-2xl p-5 cursor-pointer transition-all duration-300',
+                      'glass-panel rounded-2xl p-5 transition-all duration-300',
                       'border hover:border-pink-500/40 hover:shadow-lg hover:shadow-pink-500/10',
                       'hover:scale-[1.02]'
                     )}
@@ -239,6 +271,45 @@ export default function LadiesPage() {
                       )}
                       {!lady.fatherName && !lady.husbandName && (
                         <p className="text-xs text-muted-foreground/50 italic">No connections added</p>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex gap-2 mt-4 pt-4 border-t border-clan-border/50">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedLady(lady);
+                        }}
+                        className="flex-1 py-2 rounded-lg text-xs font-medium bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 transition-colors"
+                      >
+                        View Details
+                      </button>
+                      {canManage && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditLady(lady);
+                            }}
+                            className="px-3 py-2 rounded-lg bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 transition-colors"
+                            title="Change Status"
+                          >
+                            <UserCircle size={14} />
+                          </button>
+                          {['leader', 'scholar'].includes(user?.role || '') && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(lady._id, lady.name);
+                              }}
+                              className="px-3 py-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </motion.div>
@@ -323,6 +394,79 @@ export default function LadiesPage() {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Status Edit Modal */}
+      <AnimatePresence>
+        {editLady && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setEditLady(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="glass-panel rounded-2xl p-6 w-full max-w-md border border-clan-gold/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-cinzel text-lg text-clan-gold mb-1">Change Member Status</h3>
+              <p className="text-sm text-muted-foreground mb-5">Update status for {editLady.name}</p>
+
+              <div className="space-y-3 mb-5">
+                <button
+                  onClick={() => handleUpdateIsAlive(true)}
+                  disabled={isUpdating}
+                  className={`w-full p-4 rounded-xl border transition-all text-left ${
+                    editLady.isAlive !== false
+                      ? 'border-emerald-500/50 bg-emerald-500/10'
+                      : 'border-clan-border bg-clan-dark-3 hover:border-clan-gold/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${editLady.isAlive !== false ? 'bg-emerald-500/20' : 'bg-clan-dark-4'}`}>
+                      <User size={16} className={editLady.isAlive !== false ? 'text-emerald-400' : 'text-muted-foreground'} />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-medium ${editLady.isAlive !== false ? 'text-emerald-400' : 'text-foreground'}`}>Active Member</p>
+                      <p className="text-xs text-muted-foreground">Living member of the clan</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleUpdateIsAlive(false)}
+                  disabled={isUpdating}
+                  className={`w-full p-4 rounded-xl border transition-all text-left ${
+                    editLady.isAlive === false
+                      ? 'border-red-500/50 bg-red-500/10'
+                      : 'border-clan-border bg-clan-dark-3 hover:border-clan-gold/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${editLady.isAlive === false ? 'bg-red-500/20' : 'bg-clan-dark-4'}`}>
+                      <HeartPulse size={16} className={editLady.isAlive === false ? 'text-red-400' : 'text-muted-foreground'} />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-medium ${editLady.isAlive === false ? 'text-red-400' : 'text-foreground'}`}>Ancestor</p>
+                      <p className="text-xs text-muted-foreground">Passed away - marked as deceased</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                onClick={() => setEditLady(null)}
+                className="w-full py-2.5 rounded-xl bg-clan-dark-3 border border-clan-border text-foreground hover:border-pink-500/30 transition-colors"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 }
