@@ -6,13 +6,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? 'https://back
 const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 15000,
 });
-
-if (typeof window !== 'undefined') {
-  console.log('[API] Initialized with URL:', API_URL);
-  console.log('[API] Is Production:', isProduction);
-}
 
 // Attach token to every request
 api.interceptors.request.use((config) => {
@@ -27,20 +22,15 @@ api.interceptors.request.use((config) => {
 
 // Handle auth errors globally
 api.interceptors.response.use(
-  (res) => {
-    if (typeof window !== 'undefined') {
-      console.log('[API] Response:', res.config.url, res.status);
-    }
-    return res;
-  },
+  (res) => res,
   (error) => {
-    if (typeof window !== 'undefined') {
-      console.error('[API] Error:', error.config?.url, error.message, error.response?.status, error.response?.data);
-    }
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('clan_token');
-      localStorage.removeItem('clan_user');
-      window.location.href = '/auth/login';
+      const isAuthRoute = error.config?.url?.includes('/auth/');
+      const isMeRoute = error.config?.url?.includes('/auth/me');
+      if (!isAuthRoute && !isMeRoute) {
+        localStorage.removeItem('clan_token');
+        window.location.href = '/auth/login';
+      }
     }
     return Promise.reject(error);
   }

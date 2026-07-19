@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import Sidebar from '@/components/layout/Sidebar';
@@ -9,15 +9,25 @@ import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isInitialized } = useAuthStore();
+  const { token, isInitialized, user, updateUser } = useAuthStore();
+  const [isValidating, setIsValidating] = useState(false);
 
   useEffect(() => {
-    if (isInitialized && !user) {
-      router.replace('/auth/login');
+    if (isInitialized && token && !user && !isValidating) {
+      setIsValidating(true);
+      import('@/lib/api').then(({ default: api }) => {
+        api.get('/auth/me')
+          .then((res: any) => updateUser(res.data.data))
+          .catch(() => {
+            localStorage.removeItem('clan_token');
+            router.replace('/auth/login');
+          })
+          .finally(() => setIsValidating(false));
+      });
     }
-  }, [user, isInitialized, router]);
+  }, [isInitialized, token, user, isValidating, router, updateUser]);
 
-  if (!isInitialized) {
+  if (!isInitialized || (isInitialized && token && !user && isValidating)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-clan-black">
         <div className="flex flex-col items-center gap-4">
@@ -28,7 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return null;
+  if (!token || !user) return null;
 
   return (
     <div className="flex min-h-screen bg-clan-black">

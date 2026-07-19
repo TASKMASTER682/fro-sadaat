@@ -434,7 +434,7 @@ export default function SpousePage() {
 
                     {seeker.spouseSearchBio && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                        "{seeker.spouseSearchBio}"
+                        &ldquo;{seeker.spouseSearchBio}&rdquo;
                       </p>
                     )}
 

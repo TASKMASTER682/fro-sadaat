@@ -35,13 +35,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (typeof window === 'undefined') return;
     const token = localStorage.getItem('clan_token');
     if (!token) { set({ isInitialized: true }); return; }
-    try {
-      const res = await api.get('/auth/me');
-      set({ user: res.data.data, token, isInitialized: true });
-    } catch {
-      localStorage.removeItem('clan_token');
-      set({ isInitialized: true });
-    }
+    set({ token, isInitialized: true });
   },
 
   login: async (email, password) => {

@@ -7,18 +7,33 @@ import LandingUI from '@/components/landing/LandingUI';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, isInitialized } = useAuthStore();
+  const { token, isInitialized } = useAuthStore();
   const [showContent, setShowContent] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleEnter = () => {
-    if (!isInitialized) return;
-    if (user) {
-      router.push('/shajra');
+  useEffect(() => {
+    if (isInitialized) {
+      setIsReady(true);
+    }
+  }, [isInitialized]);
+
+  const handleEnter = async () => {
+    if (!isReady) return;
+    if (token) {
+      try {
+        const api = (await import('@/lib/api')).default;
+        const res = await api.get('/auth/me');
+        const { updateUser } = useAuthStore.getState();
+        updateUser(res.data.data);
+        router.push('/shajra');
+      } catch {
+        router.push('/auth/login');
+      }
     } else {
       router.push('/auth/login');
     }
